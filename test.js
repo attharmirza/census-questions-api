@@ -1,5 +1,5 @@
 import inquirer from 'inquirer'
-import main from './index.js'
+import queryModel from './scripts/queryModel.js'
 
 /**
  * Get user input the prompt to send to the generative AI api.
@@ -32,9 +32,12 @@ async function test() {
             return
         }
 
-        const response = await main(input)
-
-        console.log('\n' + response.text())
+        try {
+            const response = await queryModel(input)
+            console.log('\n' + response.text())
+        } catch (error) {
+            console.error(error)
+        }
     }
 }
 
