@@ -12,11 +12,9 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
  * @param {string} prompt User generated text to query an API
  * @returns {string}
  */
-async function main(prompt) {
+export default async function main(prompt) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
 
-    console.log(response.text());
+    return response.text()
 }
-
-main('hello world')
