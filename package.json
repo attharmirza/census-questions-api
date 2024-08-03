@@ -1,0 +1,29 @@
+{
+  "name": "data_robot_aide",
+  "version": "0.0.1",
+  "description": "Query and analyze data from census and statistics offices around the world.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "git+https://github.com/MePiyush/LSE_JAI_24.git",
+  "keywords": [
+    "ai",
+    "generative",
+    "census",
+    "data",
+    "analysis",
+    "chatbot"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MePiyush/LSE_JAI_24/issues"
+  },
+  "homepage": "https://github.com/MePiyush/LSE_JAI_24#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.16.0",
+    "dotenv": "^16.4.5"
+  }
+}
