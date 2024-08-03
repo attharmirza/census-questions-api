@@ -16,5 +16,5 @@ export default async function main(prompt) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
 
-    return response.text()
+    return response
 }

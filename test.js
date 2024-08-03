@@ -7,26 +7,35 @@ import main from './index.js'
  * @returns {Object} 
  */
 async function getPrompt() {
-    process.stdout.write('\x1Bc')
-
     const answer = await inquirer.prompt([
-        { name: 'prompt', message: 'Enter test prompt:' }
+        { name: 'prompt', message: '(reply STOP to end)' }
     ])
 
-    return answer
+    return answer.prompt
 }
 
 /**
  * Function for testing generative AI responses. Logs responses to the console.
  */
 async function test() {
-    const history = []
+    console.clear()
 
-    const input = await getPrompt()
+    console.log('Welcome to the model testing interface. What would you like to ask?\n')
 
-    const response = await main(input.prompt)
+    let looping = true
 
-    console.log(response)
+    while(looping) {
+        const input = await getPrompt()
+
+        if (input === 'STOP') {
+            looping = false
+            return
+        }
+
+        const response = await main(input)
+
+        console.log('\n' + response.text())
+    }
 }
 
 test()
