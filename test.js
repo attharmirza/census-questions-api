@@ -1,5 +1,11 @@
+import 'dotenv/config'
 import inquirer from 'inquirer'
 import queryModel from './scripts/queryModel.js'
+import queryAPI from './scripts/queryAPI.js'
+
+/**
+ * Testing functions for calling the Gemini API.
+ */
 
 /**
  * Get user input the prompt to send to the generative AI api.
@@ -24,7 +30,7 @@ async function test() {
 
     let looping = true
 
-    while(looping) {
+    while (looping) {
         const input = await getPrompt()
 
         if (input === 'STOP') {
@@ -41,4 +47,14 @@ async function test() {
     }
 }
 
-test()
+// test()
+
+/**
+ * Testing the functions for calling the the Census API
+ */
+
+const testURL = `https://api.census.gov/data/2022/acs/acs1?get=group(B01001)&for=us:1&key=${process.env.US_CENSUS_API_KEY}`
+
+const testURLResponse = await queryAPI(testURL)
+
+console.log(testURLResponse)
