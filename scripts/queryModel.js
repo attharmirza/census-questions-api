@@ -25,16 +25,16 @@ async function generateFunctionCall() {
             type: 'OBJECT',
             properties: {
                 groups: {
-                    type: 'ARRAY',
-                    values: groups.map(d => d.name),
-                    description: `Can be any combination of the following group IDs. Here is each ID value followed by an equals sign that points to the description of data it represents: ${groups.map(d => `${d.name} = ${d.description}`)}`
+                    type: 'ENUM',
+                    values: groups.groups.map(d => d.name),
+                    description: `Can be any of the following group IDs. Here is each ID value followed by the description of data it represents: ${groups.groups.map(d => `${d.name} = ${d.description}`).join(', ')}`
                 }
             },
             required: ["groups"]
         }
     }
 
-    console.log(groupsCall)
+    console.log(groupsCall.parameters.properties.groups)
 
     return groupsCall
 }
