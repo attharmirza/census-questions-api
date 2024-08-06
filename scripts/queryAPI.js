@@ -59,11 +59,9 @@ export async function downloadAPI(baseURL, pathURL) {
 const acsBaseUrl = 'https://api.census.gov/data/2022/acs/acs1/'
 const acsBaseUrlGroups = 'https://api.census.gov/data/2022/acs/acs1/groups/'
 
-
 // downloadAPI(acsBaseUrl, 'groups.json')
 
 // downloadAPI(acsBaseUrl, 'variables.json')
-
 
 // async function downloadAPIVariables() {
 //     const groupsRaw = await fs.readFile('../groups.json')
