@@ -2,17 +2,18 @@ import 'dotenv/config'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 
-const acsBaseUrl = 'https://api.census.gov/data/2022/acs/acs1/'
-
 /**
  * Simple fetch function for getting data from an API
  * 
- * @param {string} url URL of API with path parameters
- * @returns 
+ * @param {string} baseURL API to download from
+ * @param {string} pathURL path on API to download location
+ * @param {boolean} [includeKey = false] does URL need API key appended?
+ * @returns desired json from API
  */
-export default async function queryAPI(baseURL, pathURL) {
+export default async function queryAPI(baseURL, pathURL, includeKey = false) {
+    const fetchURL = includeKey ? `${baseURL}${pathURL}?&key=${process.env.US_CENSUS_API_KEY}` : `${baseURL}${pathURL}`
     try {
-        const response = await fetch(`${baseURL}${pathURL}?&key=${process.env.US_CENSUS_API_KEY}`)
+        const response = await fetch(fetchURL)
 
         const json = await response.json()
 
@@ -55,9 +56,14 @@ export async function downloadAPI(baseURL, pathURL) {
  * subdirectory between steps.
  */
 
-// downloadAPI('groups.json', 'parametersACS')
+const acsBaseUrl = 'https://api.census.gov/data/2022/acs/acs1/'
+const acsBaseUrlGroups = 'https://api.census.gov/data/2022/acs/acs1/groups/'
 
-// const acsBaseUrlGroups = 'https://api.census.gov/data/2022/acs/acs1/groups/'
+
+// downloadAPI(acsBaseUrl, 'groups.json')
+
+// downloadAPI(acsBaseUrl, 'variables.json')
+
 
 // async function downloadAPIVariables() {
 //     const groupsRaw = await fs.readFile('../groups.json')
