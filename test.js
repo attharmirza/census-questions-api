@@ -23,7 +23,7 @@ async function getPrompt() {
 /**
  * Function for testing generative AI responses. Logs responses to the console.
  */
-async function test() {
+async function testModel() {
     console.clear()
 
     console.log('Welcome to the model testing interface. What would you like to ask?\n')
@@ -47,14 +47,13 @@ async function test() {
     }
 }
 
-// test()
-
 /**
- * Testing the functions for calling the the Census API
+ * Function for testing calls to the Census API
  */
+async function testAPI() {
+    const testURL = `https://api.census.gov/data/2022/acs/acs1?get=group(B01001)&for=us:1&key=${process.env.US_CENSUS_API_KEY}`
 
-const testURL = `https://api.census.gov/data/2022/acs/acs1?get=group(B01001)&for=us:1&key=${process.env.US_CENSUS_API_KEY}`
-
-const testURLResponse = await queryAPI(testURL)
-
-console.log(testURLResponse)
+    const testURLResponse = await queryAPI(testURL)
+    
+    console.log(testURLResponse)
+}
