@@ -52,28 +52,27 @@ export async function downloadAPI(baseURL, pathURL) {
 }
 
 /**
- * Downloading all the groups and their respective variables, need to cd into
- * subdirectory between steps.
+ * Downloading all the groups and their respective variables.
  */
 
 const acsBaseUrl = 'https://api.census.gov/data/2022/acs/acs1/'
 const acsBaseUrlGroups = 'https://api.census.gov/data/2022/acs/acs1/groups/'
 
-// downloadAPI(acsBaseUrl, 'groups.json')
+downloadAPI(acsBaseUrl, 'groups.json')
 
-// downloadAPI(acsBaseUrl, 'variables.json')
+downloadAPI(acsBaseUrl, 'variables.json')
 
-// async function downloadAPIVariables() {
-//     const groupsRaw = await fs.readFile('../groups.json')
-//     const groupsJSON = JSON.parse(groupsRaw).groups
+async function downloadAPIVariables() {
+    const groupsRaw = await fs.readFile('../groups.json') // This path needs to be updated depending on the directory you're calling the function from.
+    const groupsJSON = JSON.parse(groupsRaw).groups
 
-//     for (const group of groupsJSON) {
-//         try {
-//             await downloadAPI(acsBaseUrlGroups, `${group.name}.json`)
-//         } catch (err) {
-//             throw err
-//         }
-//     }
-// }
+    for (const group of groupsJSON) {
+        try {
+            await downloadAPI(acsBaseUrlGroups, `${group.name}.json`)
+        } catch (err) {
+            throw err
+        }
+    }
+}
 
-// downloadAPIVariables()
+downloadAPIVariables()
