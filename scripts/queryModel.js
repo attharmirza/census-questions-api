@@ -25,8 +25,7 @@ async function generateFunctionCall() {
             type: 'OBJECT',
             properties: {
                 groups: {
-                    type: 'ENUM',
-                    values: groups.groups.map(d => d.name),
+                    type: 'STRING',
                     description: `Can be any of the following group IDs. Here is each ID value followed by the description of data it represents: ${groups.groups.map(d => `${d.name} = ${d.description}`).join(', ')}`
                 }
             },
@@ -34,15 +33,18 @@ async function generateFunctionCall() {
         }
     }
 
-    console.log(groupsCall.parameters.properties.groups)
-
     return groupsCall
 }
 
-generateFunctionCall()
+const functionCall = await generateFunctionCall()
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    tools: {
+        functionDeclarations: [functionCall]
+    }
+});
 
 /**
  * Use this function to get API code from a generative AI model.
@@ -54,5 +56,9 @@ export default async function queryModel(prompt) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
 
-    return response
+    return response.functionCalls()[0]
 }
+
+const testQuery = await queryModel('What\'s the total population of the United States broken down by race?')
+
+console.log(testQuery)
