@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { promises as fs } from 'fs'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { queryAPI } from './queryAPI.js'
-import { csvParse } from 'd3'
+import { csvParse, groups } from 'd3'
 
 /**
  * Pull possible variables from the Census API and then generate a function call
@@ -18,7 +18,6 @@ async function generateFunctionCall() {
 
     try {
         variables = await queryAPI(hostname, `${pathnameCommon}variables.json`)
-        geographyStates = await fs.readFile('data/state_fips_master.csv', { encoding: 'utf-8' })
         geographyCounties = await fs.readFile('data/county_fips_master.csv', { encoding: 'utf-8' })
     } catch (err) {
         throw err
@@ -29,9 +28,14 @@ async function generateFunctionCall() {
         return d[1]
     })
 
-    geographyStates = csvParse(geographyStates)
-
-    geographyCounties = csvParse(geographyCounties)
+    geographyCounties = groups(csvParse(geographyCounties), d => d.state_name).map(d => ({
+        state_name: d[0],
+        fips: d[1][0].state,
+        counties: d[1].map(e => ({
+            county_name: e.county_name, 
+            fips: e.fips
+        }))
+    }))
 
     const functionCall = {
         name: 'get_data_from_us_census_american_community_survey_1_year_2022',
@@ -43,22 +47,16 @@ async function generateFunctionCall() {
                     type: 'STRING',
                     description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept}`).join(', ')}`
                 },
-                censusGeographyCountry: {
+                censusGeography: {
                     type: 'STRING',
-                    description: 'Used for statistics and data covering the entire United States, national level data. Value is always us:1.'
-                },
-                censusGeographyStates: {
-                    type: 'STRING',
-                    description: `Used for statistics and data covering states within the United States, state level data. Value is "state:" followed by a comma separated list of relevant state FIPS codes. The FIPS code for each state are as follows: ${geographyStates.map(d => `${d.state_name} = ${d.fips}`).join(', ')}`
-                },
-                censusGeographyCounties: {
-                    type: 'STRING',
-                    description: `Used for statistics and data covering counties within the United States, county level data. Value is "county:" followed by a comma separated list of relevant county FIPS codes. The FIPS code for each county are as follows: ${geographyCounties.map(d => `${d.county_name} in the state of ${d.state_name} = ${d.fips}`).join(', ')}`
+                    description: `For statistics and data covering national level data in the United States, the value is always us:1.\n\nFor statistics and data covering state level data for states within the United States. Value is "state:" followed by a comma separated list of relevant state FIPS codes. The FIPS code for each state are as follows: ${geographyCounties.map(d => `${d.state_name} = ${d.fips}`).join(', ')}.\n\nData can be further broken down into counties within each state in the United States. For county level data, the value is "county:" followed by a comma separated list of relevant county FIPS codes. ${geographyCounties.map(d => `The FIPS codes for counties in the state of ${d.state_name} are as follows: ${d.counties.map(e => `${e.county_name} = ${e.fips}`).join(', ')}`).join('. ')}`
                 }
             },
-            required: ["censusVariables"]
+            required: ["censusVariables", "censusGeography"]
         }
     }
+
+    // console.log(functionCall.parameters.properties.censusGeography.description)
 
     return functionCall
 }
@@ -86,6 +84,6 @@ export async function queryModel(prompt) {
     return response.functionCalls()[0]
 }
 
-const testQuery = await queryModel('Can you break down the population of the United States by household income?')
+const testQuery = await queryModel('What\'s the population of each county in Alabama?')
 
 console.log(testQuery)
