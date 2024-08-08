@@ -9,24 +9,20 @@ import { csvParse, groups } from 'd3'
  * @returns {object} Function call following the Gemini [specification](https://ai.google.dev/gemini-api/docs/function-calling), based on Open API
  */
 export async function generateFunctionCall() {
-    const hostname = 'api.census.gov'
-    const pathnameCommon = 'data/2022/acs/acs1/'
-
-    let variables, geographyCounties
+    let censusGroups, geographyCounties
 
     try {
-        variables = await queryAPI(hostname, `${pathnameCommon}variables.json`)
+        const hostname = 'api.census.gov'
+        const pathnameCommon = 'data/2022/acs/acs1/'
+
+        censusGroups = await queryAPI(hostname, `${pathnameCommon}groups.json`)
+
         geographyCounties = await fs.readFile('data/county_fips_master.csv', { encoding: 'utf-8' })
     } catch (err) {
         throw err
     }
 
-    variables = [...Object.entries(variables.variables)]
-        .map(d => {
-            d[1].name = d[0]
-            return d[1]
-        })
-        .filter(f => !f.concept === false && !f.label === false)
+    censusGroups = censusGroups.groups.filter(f => !f.name === false && !f.description === false)
 
     geographyCounties = groups(csvParse(geographyCounties), d => d.state_name).map(d => ({
         state_name: d[0],
@@ -43,20 +39,18 @@ export async function generateFunctionCall() {
         parameters: {
             type: 'OBJECT',
             properties: {
-                censusVariables: {
+                censusGroup: {
                     type: 'STRING',
-                    description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept.replace(/()/g, '')}`).join(', ')}.`
+                    description: `This has to be one group ID from the following list of group ID values and the description of data each represents: ${censusGroups.map(d => `${d.name} = ${d.description}`).join(', ')}.`
                 },
                 censusGeography: {
                     type: 'STRING',
                     description: `For statistics and data covering national level data in the United States, the value is always us:1. For statistics and data covering state level data for states within the United States. Value is "state:" followed by a comma separated list of relevant state FIPS codes. The FIPS code for each state are as follows: ${geographyCounties.map(d => `${d.state_name} = ${d.fips}`).join(', ')}.`
                 }
             },
-            required: ["censusVariables", "censusGeography"]
+            required: ["censusGroup", "censusGeography"]
         }
     }
-
-    // console.log(functionCall.parameters.properties.censusGeography.description)
 
     return functionCall
 }
@@ -71,6 +65,8 @@ export async function generateFunctionCall() {
 export async function queryModel(prompt, model) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
+
+    if (!response.functionCalls()) return
 
     return response.functionCalls()[0]
 }

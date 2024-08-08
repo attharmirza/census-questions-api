@@ -25,12 +25,17 @@ export default async function main(prompt) {
     // query model for AI prompt
     const modelResponse = await queryModel(prompt, model)
 
-    const { censusVariables, censusGeography } = modelResponse.args
+    if (!modelResponse) {
+        console.log('Unable to resolve data request, please try again.')
+        return
+    }
 
-    console.log(`The relevant census variables I found were 👑 ${censusVariables} 👑 and the geography variables are 🌎 ${censusGeography} 🌎\n`)
+    const { censusGroup, censusGeography } = modelResponse.args
+
+    console.log(`The most relevant group is 👑 ${censusGroup} 👑 and your geography variables are 🌎 ${censusGeography} 🌎\n`)
 
     // query the API with the AI generated variables
-    const response = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusVariables, censusGeography))
+    const response = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusGroup, censusGeography))
 
     console.log('Here\'s your data!\n')
     console.log(response)
