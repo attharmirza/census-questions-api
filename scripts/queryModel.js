@@ -1,6 +1,4 @@
-import 'dotenv/config'
 import { promises as fs } from 'fs'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { queryAPI } from './queryAPI.js'
 import { csvParse, groups } from 'd3'
 
@@ -10,11 +8,11 @@ import { csvParse, groups } from 'd3'
  * 
  * @returns {object} Function call following the Gemini [specification](https://ai.google.dev/gemini-api/docs/function-calling), based on Open API
  */
-async function generateFunctionCall() {
+export async function generateFunctionCall() {
     const hostname = 'https://api.census.gov/'
     const pathnameCommon = 'data/2022/acs/acs1/'
 
-    let variables, geographyStates, geographyCounties
+    let variables, geographyCounties
 
     try {
         variables = await queryAPI(hostname, `${pathnameCommon}variables.json`)
@@ -45,11 +43,11 @@ async function generateFunctionCall() {
             properties: {
                 censusVariables: {
                     type: 'STRING',
-                    description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept}`).join(', ')}`
+                    description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept.replace(/()/g, '')}`).join(', ')}`
                 },
                 censusGeography: {
                     type: 'STRING',
-                    description: `For statistics and data covering national level data in the United States, the value is always us:1.\n\nFor statistics and data covering state level data for states within the United States. Value is "state:" followed by a comma separated list of relevant state FIPS codes. The FIPS code for each state are as follows: ${geographyCounties.map(d => `${d.state_name} = ${d.fips}`).join(', ')}.\n\nData can be further broken down into counties within each state in the United States. For county level data, the value is "county:" followed by a comma separated list of relevant county FIPS codes. ${geographyCounties.map(d => `The FIPS codes for counties in the state of ${d.state_name} are as follows: ${d.counties.map(e => `${e.county_name} = ${e.fips}`).join(', ')}`).join('. ')}`
+                    description: `For statistics and data covering national level data in the United States, the value is always us:1. For statistics and data covering state level data for states within the United States. Value is "state:" followed by a comma separated list of relevant state FIPS codes. The FIPS code for each state are as follows: ${geographyCounties.map(d => `${d.state_name} = ${d.fips}`).join(', ')}.`
                 }
             },
             required: ["censusVariables", "censusGeography"]
@@ -61,29 +59,16 @@ async function generateFunctionCall() {
     return functionCall
 }
 
-const functionCall = await generateFunctionCall()
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    tools: {
-        functionDeclarations: [functionCall]
-    }
-});
-
 /**
  * Use this function to get API code from a generative AI model.
  * 
  * @param {string} prompt User generated text to query an API
+ * @param {GenerativeModel} model Pre-defined Gemini model instance
  * @returns {string}
  */
-export async function queryModel(prompt) {
+export async function queryModel(prompt, model) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
 
     return response.functionCalls()[0]
 }
-
-const testQuery = await queryModel('What\'s the population of each county in Alabama?')
-
-console.log(testQuery)

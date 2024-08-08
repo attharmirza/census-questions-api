@@ -18,9 +18,9 @@ import * as path from 'path'
  * @param {string} censusGeography geography type and FIPS codes 
  * @returns {censusSearchParams}
  */
-export async function generateSearchParams(censusVariables, censusGeography) {
+export function generateSearchParams(censusVariables, censusGeography) {
     return {
-        get: censusVariables,
+        get: `NAME,${censusVariables}`,
         for: censusGeography,
         key: process.env.US_CENSUS_API_KEY
     }
@@ -35,14 +35,14 @@ export async function generateSearchParams(censusVariables, censusGeography) {
  * @returns {JSON} desired json from API
  */
 export async function queryAPI(hostname, pathname, searchParams) {
-    const url = new URL('https://api.census.gov/')
+    let url = new URL('https://api.census.gov/')
 
     url.hostname = hostname
     url.pathname = pathname
 
     if (searchParams) {
-        for (param of searchParams) {
-            url.searchParams.set(param[0], param[1])
+        for (const [key, value] of Object.entries(searchParams)) {
+            url.searchParams.set(key, value)
         }
     }
 

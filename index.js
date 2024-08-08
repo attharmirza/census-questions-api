@@ -1,12 +1,37 @@
-import { queryModel } from './scripts/queryModel.js'
-import { queryAPI } from './scripts/queryAPI'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+import { queryModel, generateFunctionCall } from './scripts/queryModel.js'
+import { queryAPI, downloadAPI, generateSearchParams } from './scripts/queryAPI.js'
 
-async function main() {
+const functionCall = await generateFunctionCall()
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    tools: {
+        functionDeclarations: [functionCall]
+    }
+});
+
+/**
+ * Primary function of the application, take a prompt, generate a function call
+ * with Gemini, and then use the model's response to query the Census API.
+ */
+export default async function main(prompt) {
     // query model for AI prompt
-    queryModel()
+    const modelResponse = await queryModel(prompt, model)
 
-    // take the response from the model and query the census api
-    queryAPI()
+    const { censusVariables, censusGeography } = modelResponse.args
 
-    // return the data
+    console.log(`The census variables you want are 👑 ${censusVariables} 👑 and the geography variable is 🌎 ${censusGeography} 🌎\n`)
+
+    // query the API with the AI generated variables
+    const response = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusVariables, censusGeography))
+
+    console.log('Here\'s your data!\n')
+    console.log(response)
+    console.log('\n')
+    
+    // take the response from the model and query the census api, write the 
+    // response to the downloads folder
+    await downloadAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusVariables, censusGeography))
 }

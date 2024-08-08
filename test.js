@@ -1,7 +1,5 @@
-import 'dotenv/config'
 import inquirer from 'inquirer'
-import queryModel from './scripts/queryModel.js'
-import queryAPI from './scripts/queryAPI.js'
+import getData from './index.js'
 
 /**
  * Testing functions for calling the Gemini API.
@@ -36,24 +34,18 @@ async function testModel() {
         if (input === 'STOP') {
             looping = false
             return
-        }
-
-        try {
-            const response = await queryModel(input)
-            console.log('\n' + response.text())
-        } catch (error) {
-            console.error(error)
+        } else {
+            try {
+                console.log(`\nhmm, let me think 🤔\n`)
+    
+                const response = await getData(input)
+    
+                console.log('\n')
+            } catch (error) {
+                console.error(error)
+            }
         }
     }
 }
 
-/**
- * Function for testing calls to the Census API
- */
-async function testAPI() {
-    const testURL = `https://api.census.gov/data/2022/acs/acs1?get=group(B01001)&for=us:1&key=${process.env.US_CENSUS_API_KEY}`
-
-    const testURLResponse = await queryAPI(testURL)
-    
-    console.log(testURLResponse)
-}
+testModel()
