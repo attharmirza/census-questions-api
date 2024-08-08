@@ -9,7 +9,7 @@ export default function validateInputs(prompt) {
         throw new Error('Prompt length is too long.')
     }
 
-    if (prompt.includes(/[^A-Z0-9 ,.'?!()]/gi)) {
+    if (prompt.search(/[^A-Z0-9 ,.'?!()]/gi) >= 0) {
         throw new Error('Prompt contains invalid character. Only letters, numbers or basic grammatical marks are allowed.')
     }
 }
