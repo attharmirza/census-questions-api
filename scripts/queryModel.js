@@ -9,7 +9,7 @@ import { csvParse, groups } from 'd3'
  * @returns {object} Function call following the Gemini [specification](https://ai.google.dev/gemini-api/docs/function-calling), based on Open API
  */
 export async function generateFunctionCall() {
-    const hostname = 'https://api.census.gov/'
+    const hostname = 'api.census.gov'
     const pathnameCommon = 'data/2022/acs/acs1/'
 
     let variables, geographyCounties
@@ -21,10 +21,12 @@ export async function generateFunctionCall() {
         throw err
     }
 
-    variables = [...Object.entries(variables.variables)].map(d => {
-        d[1].name = d[0]
-        return d[1]
-    })
+    variables = [...Object.entries(variables.variables)]
+        .map(d => {
+            d[1].name = d[0]
+            return d[1]
+        })
+        .filter(f => !f.concept === false && !f.label === false)
 
     geographyCounties = groups(csvParse(geographyCounties), d => d.state_name).map(d => ({
         state_name: d[0],
@@ -43,7 +45,7 @@ export async function generateFunctionCall() {
             properties: {
                 censusVariables: {
                     type: 'STRING',
-                    description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept.replace(/()/g, '')}`).join(', ')}`
+                    description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept.replace(/()/g, '')} ${d.label.replace(/(!!)|(:!!)/g, ' ')}`).join(', ')}.`
                 },
                 censusGeography: {
                     type: 'STRING',
