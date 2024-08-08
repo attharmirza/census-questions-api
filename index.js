@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { queryModel, generateFunctionCall } from './scripts/queryModel.js'
 import { queryAPI, generateSearchParams } from './scripts/queryAPI.js'
-import { writeData } from './scripts/processData.js'
+import { arrayToJSON, assignVariableNames, writeData } from './scripts/processData.js'
 import validateInputs from './scripts/validateInputs.js'
 
 const functionCall = await generateFunctionCall()
@@ -37,11 +37,13 @@ export default async function main(prompt) {
     // query the API with the AI generated variables
     const response = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusGroup, censusGeography))
 
+    const responseFormatted = await assignVariableNames(arrayToJSON(response))
+
     console.log('Here\'s your data!\n')
-    console.log(response)
+    console.log(responseFormatted)
     console.log('\n')
     
     // take the response from the model and query the census api, write the 
     // response to the downloads folder
-    await writeData(response)
+    await writeData(responseFormatted)
 }
