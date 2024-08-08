@@ -22,7 +22,7 @@ export default async function main(prompt) {
 
     const { censusVariables, censusGeography } = modelResponse.args
 
-    console.log(`The census variables you want are 👑 ${censusVariables} 👑 and the geography variable is 🌎 ${censusGeography} 🌎\n`)
+    console.log(`The relevant census variables I found were 👑 ${censusVariables} 👑 and the geography variables are 🌎 ${censusGeography} 🌎\n`)
 
     // query the API with the AI generated variables
     const response = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusVariables, censusGeography))
