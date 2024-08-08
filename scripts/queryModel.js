@@ -45,7 +45,7 @@ export async function generateFunctionCall() {
             properties: {
                 censusVariables: {
                     type: 'STRING',
-                    description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept.replace(/()/g, '')} ${d.label.replace(/(!!)|(:!!)/g, ' ')}`).join(', ')}.`
+                    description: `Can be any combination of up to 50 of the following variable IDs, seperated by commas. Here is each variable ID value followed by the description of data it represents: ${variables.map(d => `${d.name} = ${d.concept.replace(/()/g, '')}`).join(', ')}.`
                 },
                 censusGeography: {
                     type: 'STRING',
