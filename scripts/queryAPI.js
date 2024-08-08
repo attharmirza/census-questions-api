@@ -1,6 +1,4 @@
 import 'dotenv/config'
-import { promises as fs } from 'fs'
-import * as path from 'path'
 
 /**
  * Search parameters for the US Census Bureau 
@@ -55,22 +53,4 @@ export async function queryAPI(hostname, pathname, searchParams) {
     } catch (err) {
         throw err
     }
-}
-
-/**
- * Write the JSON response from the API into a file named after the epoch time of the download.
- * 
- * @param {JSON} data data from the API
- */
-export async function writeData(data) {
-    const downloadPath = ['downloads', `${Date.now()}.json`]
-    const downloadPathJoined = path.join(...downloadPath)
-
-    try {
-        await fs.writeFile(downloadPathJoined, JSON.stringify(data))
-    } catch (err) {
-        throw err
-    }
-
-    console.log(`File written to ✨ ${downloadPathJoined} ✨ successfully ✅`)
 }

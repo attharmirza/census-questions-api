@@ -2,10 +2,6 @@ import inquirer from 'inquirer'
 import getData from './index.js'
 
 /**
- * Testing functions for calling the Gemini API.
- */
-
-/**
  * Get user input the prompt to send to the generative AI api.
  * 
  * @returns {Object} 

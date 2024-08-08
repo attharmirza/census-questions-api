@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { queryModel, generateFunctionCall } from './scripts/queryModel.js'
-import { queryAPI, writeData, generateSearchParams } from './scripts/queryAPI.js'
+import { queryAPI, generateSearchParams } from './scripts/queryAPI.js'
+import { writeData } from './scripts/processData.js'
+import validateInputs from './scripts/validateInputs.js'
 
 const functionCall = await generateFunctionCall()
 
@@ -17,6 +19,9 @@ const model = genAI.getGenerativeModel({
  * with Gemini, and then use the model's response to query the Census API.
  */
 export default async function main(prompt) {
+    // start by validating the input prompt
+    validateInputs(prompt)
+
     // query model for AI prompt
     const modelResponse = await queryModel(prompt, model)
 
