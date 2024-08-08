@@ -3,17 +3,51 @@ import { promises as fs } from 'fs'
 import * as path from 'path'
 
 /**
+ * Search parameters for the US Census Bureau 
+ * @typedef {Object} censusSearchParams
+ * @property {string} get Variable names, separated by commas. Group names in parentheses (e.g. group(B01001))
+ * @property {string} for Geography type, then colon, then FIPS codes seperated by commas (e.g. state:01,06)
+ * @property {string} key API key
+ */
+
+/**
+ * Construct query parameters for queryAPI() function based on input string of a group 
+ * name, variable names, and geography fips codes.
+ * 
+ * @param {string} censusVariables comma separated list of [variables](https://api.census.gov/data/2022/acs/acs1/variables.json) from the Census API
+ * @param {string} censusGeography geography type and FIPS codes 
+ * @returns {censusSearchParams}
+ */
+export async function generateSearchParams(censusVariables, censusGeography) {
+    return {
+        get: censusVariables,
+        for: censusGeography,
+        key: process.env.US_CENSUS_API_KEY
+    }
+}
+
+/**
  * Simple fetch function for getting data from an API
  * 
- * @param {string} baseURL API to download from
- * @param {string} pathURL path on API to download location
- * @param {boolean} [includeKey = false] does URL need API key appended?
- * @returns desired json from API
+ * @param {string} hostname API to download from
+ * @param {string} pathname path on API to download location
+ * @param {censusSearchParams} [searchParams] search parameters for filtering API data
+ * @returns {JSON} desired json from API
  */
-export default async function queryAPI(baseURL, pathURL, includeKey = false) {
-    const fetchURL = includeKey ? `${baseURL}${pathURL}?&key=${process.env.US_CENSUS_API_KEY}` : `${baseURL}${pathURL}`
+export async function queryAPI(hostname, pathname, searchParams) {
+    const url = new URL('https://api.census.gov/')
+
+    url.hostname = hostname
+    url.pathname = pathname
+
+    if (searchParams) {
+        for (param of searchParams) {
+            url.searchParams.set(param[0], param[1])
+        }
+    }
+
     try {
-        const response = await fetch(fetchURL)
+        const response = await fetch(url)
 
         const json = await response.json()
 
@@ -26,27 +60,28 @@ export default async function queryAPI(baseURL, pathURL, includeKey = false) {
 /**
  * Download json objects from an API and save them locally.
  * 
- * @param {string} baseURL API to download from
- * @param {string} pathURL path on API to download location
+ * @param {string} hostname API to download from
+ * @param {string} pathname path on API to download location
+ * @param {censusSearchParams} [searchParams] search parameters for filtering API data
  */
-export async function downloadAPI(baseURL, pathURL) {
+export async function downloadAPI(hostname, pathname, searchParams) {
     let response
 
     try {
-        response = await queryAPI(baseURL, pathURL)
+        response = await queryAPI(hostname, pathname, searchParams)
     } catch (err) {
         throw err
     }
 
-    const downloadPathArray = pathURL.split(/\/\\/g)
-    const downloadPathLast = `${downloadPathArray.pop()}`
-    const downloadPath = [downloadPathArray, downloadPathLast].flat()
+
+    const downloadPath = ['downloads', `${Date.now()}.json`]
+    const downloadPathJoined = path.join(...downloadPath)
 
     try {
-        await fs.writeFile(path.join(...downloadPath), JSON.stringify(response))
+        await fs.writeFile(downloadPathJoined, JSON.stringify(response))
     } catch (err) {
         throw err
     }
 
-    console.log(`File written to ✨ ${path.join(...downloadPath)} ✨ successfully ✅`)
+    console.log(`File written to ✨ ${downloadPathJoined} ✨ successfully ✅`)
 }

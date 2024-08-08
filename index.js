@@ -1,5 +1,5 @@
-import queryModel from './scripts/queryModel.js'
-import queryAPI from './scripts/queryAPI'
+import { queryModel } from './scripts/queryModel.js'
+import { queryAPI } from './scripts/queryAPI'
 
 async function main() {
     // query model for AI prompt
