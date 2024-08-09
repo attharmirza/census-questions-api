@@ -1,0 +1,40 @@
+swagger: "2.0"
+info:
+  title: "census-questions-api"
+  description: "This is an API for getting "
+  version: "0.1.0"
+host: "census-questions-api.apigateway.census-questions.cloud.goog"
+basePath: "/"
+schemes:
+  - "https"
+produces:
+  - "application/json"
+security:
+  - api_key: []
+paths:
+  "/question":
+    get:
+      description: "Get dataset based on a prompt."
+      operationId: "question"
+      parameters:
+        - name: prompt
+          in: query
+          required: true
+          type: string
+        - name: keyGemini
+          in: query
+          required: true
+          type: string
+        - name: keyCensus
+          in: query
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Success."
+          schema:
+            type: array
+            description: Data from U.S. Census Bureau
+            example: [{"B01003_001E":{"concept":"Total Population","label":"Estimate!!Total","value":"333287562"},"NAME":"United States"}]
+        400:
+          description: "Prompt or keys are invalid or missing."
