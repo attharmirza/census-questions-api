@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import { queryAPI } from './queryAPI.js'
-import { csvParse, groups } from 'd3'
+import { csvParse, groups, ascending } from 'd3'
 
 /**
  * Pull possible variables from the Census API and then generate a function call
@@ -22,13 +22,15 @@ export async function generateFunctionCall() {
         throw err
     }
 
-    censusGroups = censusGroups.groups.filter(f => !f.name === false && !f.description === false)
+    censusGroups = censusGroups.groups
+        .filter(f => !f.name === false && !f.description === false)
+        .sort((a, b) => ascending(a.name, b.name))
 
     geographyCounties = groups(csvParse(geographyCounties), d => d.state_name).map(d => ({
         state_name: d[0],
         fips: d[1][0].state,
         counties: d[1].map(e => ({
-            county_name: e.county_name, 
+            county_name: e.county_name,
             fips: e.fips
         }))
     }))
