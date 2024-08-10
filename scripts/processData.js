@@ -34,7 +34,7 @@ export async function assignVariableNames(dataJSON) {
 
     return dataJSON.map(d => {
         const entries = Object.entries(d)
-        
+
         const entriesWithInfo = entries.map(e => {
             if (e[0] === 'NAME') return e
 
@@ -44,11 +44,11 @@ export async function assignVariableNames(dataJSON) {
 
             if (!variableInfo) return
 
-            const {label, concept} = variableInfo
+            const { label, concept } = variableInfo
 
             const value = e[1]
 
-            return [e[0], {concept, label, value}]
+            return [e[0], { concept, label, value }]
         })
 
         return Object.fromEntries(new Map(entriesWithInfo.filter(f => f)))
@@ -61,6 +61,12 @@ export async function assignVariableNames(dataJSON) {
  * @param {JSON} data data from the API
  */
 export async function writeData(data) {
+    try {
+        await fs.mkdir('downloads')
+    } catch (err) {
+        throw err
+    }
+
     const downloadPath = ['downloads', `${Date.now()}.json`]
     const downloadPathJoined = path.join(...downloadPath)
 

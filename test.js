@@ -1,5 +1,6 @@
 import inquirer from 'inquirer'
-import getData from './index.js'
+import { main } from './index.js'
+import { writeData } from './scripts/processData.js'
 
 /**
  * Get user input the prompt to send to the generative AI api.
@@ -34,8 +35,14 @@ async function testModel() {
             try {
                 console.log(`\nhmm, let me think 🤔\n`)
     
-                const response = await getData(input)
-    
+                const response = await main(input)
+
+                console.log('\nhere\'s your data! 😄\n')
+                console.log(response)
+                console.log('\n')
+
+                writeData(response)
+                
                 console.log('\n')
             } catch (error) {
                 console.error(error)

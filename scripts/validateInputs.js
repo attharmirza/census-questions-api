@@ -5,6 +5,10 @@
  * @param {string} prompt Natural language prompt for fetching data
  */
 export default function validateInputs(prompt) {
+    if (!prompt || prompt.length === 0) {
+        throw new Error('No prompt found.')
+    }
+
     if (prompt.length > 500) {
         throw new Error('Prompt length is too long.')
     }
