@@ -41,7 +41,7 @@ export async function generateFunctionCall() {
      */
 
     try {
-        geographyCounties = await fs.readFile('data/county_fips_master.csv', { encoding: 'utf-8' })
+        geographyCounties = await fs.readFile('assets/fipsCodes.csv', { encoding: 'utf-8' })
     } catch (err) {
         throw err
     }

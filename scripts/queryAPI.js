@@ -1,11 +1,9 @@
-import 'dotenv/config'
-
 /**
  * Search parameters for the US Census Bureau 
  * @typedef {Object} censusSearchParams
  * @property {string} get Variable names, separated by commas. Group name in parentheses (e.g. group(B01001))
  * @property {string} for Geography type, then colon, then FIPS codes seperated by commas (e.g. state:01,06)
- * @property {string} key API key
+ * @property {string} [key] API key
  */
 
 /**
@@ -16,12 +14,17 @@ import 'dotenv/config'
  * @param {string} censusGeography geography type and FIPS codes 
  * @returns {censusSearchParams}
  */
-export function generateSearchParams(censusGroup, censusGeography) {
-    return {
+export function generateSearchParams(censusGroup, censusGeography, key) {
+    const searchParams = {
         get: `group(${censusGroup})`,
-        for: censusGeography,
-        key: process.env.US_CENSUS_API_KEY
+        for: censusGeography
     }
+
+    if (!key) return searchParams
+
+    searchParams.key = key
+    
+    return searchParams
 }
 
 /**

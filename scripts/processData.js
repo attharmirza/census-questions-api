@@ -62,9 +62,13 @@ export async function assignVariableNames(dataJSON) {
  */
 export async function writeData(data) {
     try {
-        await fs.mkdir('downloads')
+        await fs.access('downloads')
     } catch (err) {
-        throw err
+        try {
+            await fs.mkdir('downloads')
+        } catch (err) {
+            throw err
+        }
     }
 
     const downloadPath = ['downloads', `${Date.now()}.json`]

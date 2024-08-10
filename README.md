@@ -15,3 +15,7 @@ Information coming soon.
 ## Installation
 
 Information coming soon.
+
+## Update API on Google Cloud
+
+`gcloud functions deploy answer-question --gen2 --region=us-east4 --runtime=nodejs20 --entry-point=answer-question --env-vars-file .env.yaml --trigger-http`
