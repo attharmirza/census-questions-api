@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "yaml2json .env.yaml >.env.json && env-cmd -r ./.env.json functions-framework .env.yaml --target=answer-question",
-    "test": "yaml2json .env.yaml >.env.json && env-cmd -r ./.env.json node test.js",
+    "start": "yaml2json < .env.yaml > .env.json && env-cmd -r ./.env.json functions-framework .env.yaml --target=answer-question",
+    "test": "yaml2json < .env.yaml > .env.json && env-cmd -r ./.env.json node test.js",
     "deploy": "gcloud functions deploy answer-question --gen2 --region=us-east4 --runtime=nodejs20 --entry-point=answer-question --env-vars-file .env.yaml --trigger-http"
   },
   "repository": "git+https://github.com/MePiyush/LSE_JAI_24.git",

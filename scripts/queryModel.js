@@ -48,6 +48,7 @@ export async function generateFunctionCall() {
 
     geographyCounties = groups(csvParse(geographyCounties), d => d.state_name).map(d => ({
         state_name: d[0],
+        state_abbr: d[1][0].state_abbr,
         fips: (d[1][0].state.length === 1) ? `0${d[1][0].state}` : d[1][0].state, // Need to add back leading zeroes for FIPS codes. Should probably edit source dataset.
         counties: d[1].map(e => ({
             county_name: e.county_name,
@@ -55,7 +56,7 @@ export async function generateFunctionCall() {
         }))
     }))
 
-    const geographyCountiesDescription = `For statistics and data covering national level data in the United States, the value is always us:1. For statistics and data covering state level data for states within the United States. Value is "state:" followed by a comma separated list of relevant state FIPS codes. The FIPS code for each state are as follows: ${geographyCounties.map(d => `${d.state_name} = ${d.fips}`).join(', ')}.`
+    const geographyCountiesDescription = `For statistics and data covering national level data in the United States, the value is always us:1. For statistics and data covering state level data for states within the United States, the value is "state:" followed by a comma separated list of relevant state FIPS codes. The FIPS code for each state are as follows: ${geographyCounties.map(d => `${d.state_name} abbreviated as ${d.state_abbr} = ${d.fips}`).join(', ')}.`
 
     /**
      * Finally, assembling and returning the function call
