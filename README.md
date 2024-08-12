@@ -58,7 +58,7 @@ To use that query paramater to get data, start the local server and run the foll
 curl http://localhost:8080/answer-question?prompt=What%27s+the+population+of+the+United+States%3F
 ```
 
-Your response should be something like the following.
+The response should be something like the following.
 
 ```bash
 StatusCode        : 200
