@@ -29,7 +29,7 @@ Next, running `yarn start` launches a local development server (at `http://local
 
 Now, you should be able to `curl http://localhost:8080` from another terminal shell and get an error message prompting you to `Please provide a valid prompt or key`.
 
-There is **one more important step** before you can start querying the API and getting census data. Create a `.env.yaml` file in the root directory and provide a valid `GEMINI_API_KEY` value and `US_CENSUS_API_KEY` value. Here's an example of the contents:
+There is **one more important step** before you can start querying the API and getting census data. Create a `.env.yaml` file in the root directory and provide a valid `GEMINI_API_KEY` value and `US_CENSUS_API_KEY` value. You can get a Gemini API key [here](https://ai.google.dev/gemini-api/docs/api-key) and Census data key [here](https://api.census.gov/data/key_signup.html). Here's an example of the contents:
 
 ```yaml
 ---
