@@ -11,9 +11,9 @@ import validateInputs from './scripts/validateInputs.js'
 functions.http('answer-question', async (req, res) => {
     const key = process.env.GEMINI_API_KEY // Using my personal Gemini API key for now, temporary solution
 
-    console.log(key)
-
     const { prompt } = await req.query
+
+    res.set('Access-Control-Allow-Origin', '*') // Temporary solution for CORS
 
     try {
         validateInputs(prompt, key)
@@ -27,8 +27,8 @@ functions.http('answer-question', async (req, res) => {
     try {
         functionCall = await generateFunctionCall()
     } catch (err) {
-        console.error(err)
         res.status(502).send('The Census API responded with an error.')
+        throw(err)
     }
 
     const genAI = new GoogleGenerativeAI(key);
@@ -64,8 +64,5 @@ functions.http('answer-question', async (req, res) => {
     }
 
 
-    res
-        .status(200)
-        .set('Access-Control-Allow-Origin', '*')
-        .send(apiResponseFormatted);
+    res.status(200).send(apiResponseFormatted);
 });
