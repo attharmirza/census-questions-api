@@ -33,25 +33,31 @@ export async function assignVariableNames(dataJSON) {
     censusVariables = new Map(Object.entries(censusVariables.variables))
 
     return dataJSON.map(d => {
-        const entries = Object.entries(d)
+        const { NAME, GEO_ID } = d
 
-        const entriesWithInfo = entries.map(e => {
-            if (e[0] === 'NAME') return e
+        delete d['NAME']
+        delete d['GEO_ID']
 
-            if (e[0] === 'GEO_ID') return
+        let DESCRIPTION
 
-            const variableInfo = censusVariables.get(e[0]) ? censusVariables.get(e[0]) : undefined
+        const CATEGORIES = Object
+            .entries(d)
+            .map(e => {
+                const variableInfo = censusVariables.get(e[0]) ? censusVariables.get(e[0]) : undefined
 
-            if (!variableInfo) return
+                if (!variableInfo) return
 
-            const { label, concept } = variableInfo
+                const { label, concept } = variableInfo
+                const VALUE = e[1]
+                const ID = e[0]
 
-            const value = e[1]
+                DESCRIPTION = concept
 
-            return [e[0], { concept, label, value }]
-        })
+                return { ID, LABEL: label, VALUE }
+            })
+            .filter(f => !f === false)
 
-        return Object.fromEntries(new Map(entriesWithInfo.filter(f => f)))
+        return { NAME, GEO_ID, DESCRIPTION, CATEGORIES }
     })
 }
 
