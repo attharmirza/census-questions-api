@@ -63,5 +63,9 @@ functions.http('answer-question', async (req, res) => {
         throw err
     }
 
-    res.status(200).send(apiResponseFormatted);
+
+    res
+        .status(200)
+        .set('Access-Control-Allow-Origin', '*')
+        .send(apiResponseFormatted);
 });
