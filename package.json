@@ -1,29 +1,23 @@
 {
-  "name": "data_robot_aide",
-  "version": "0.0.1",
-  "description": "Query and analyze data from census and statistics offices around the world.",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "start": "yaml2json < .env.yaml > .env.json & env-cmd -r .env.json functions-framework .env.yaml --target=answer-question",
-    "test": "yaml2json < .env.yaml > .env.json & env-cmd -r .env.json node test.js",
-    "deploy": "gcloud functions deploy answer-question --gen2 --region=us-east4 --runtime=nodejs20 --entry-point=answer-question --env-vars-file .env.yaml --trigger-http"
-  },
-  "repository": "git+https://github.com/MePiyush/LSE_JAI_24.git",
+  "name": "census-newsroom-aide-api",
+  "description": "The backend for the Census Newsroom Aide project.",
   "keywords": [
     "ai",
     "generative",
     "census",
     "data",
     "analysis",
-    "chatbot"
+    "chatbot",
+    "api"
   ],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/MePiyush/LSE_JAI_24/issues"
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "yaml2json < .env.yaml > .env.json & env-cmd -r .env.json functions-framework .env.yaml --target=answer-question",
+    "test": "yaml2json < .env.yaml > .env.json & env-cmd -r .env.json node test.js",
+    "deploy": "gcloud functions deploy answer-question --gen2 --region=us-east4 --runtime=nodejs20 --entry-point=answer-question --env-vars-file .env.yaml --trigger-http"
   },
-  "homepage": "https://github.com/MePiyush/LSE_JAI_24#readme",
   "dependencies": {
     "@google-cloud/functions-framework": "^3.4.2",
     "@google/generative-ai": "^0.16.0",
