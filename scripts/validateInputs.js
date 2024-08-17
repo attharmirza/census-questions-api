@@ -16,11 +16,4 @@ export default function validateInputs(prompt, key) {
     if (prompt.search(/[^A-Z0-9 ,.'?!()]/gi) >= 0) {
         throw new Error('Prompt contains invalid character. Only letters, numbers or basic grammatical marks are allowed.')
     }
-
-    if (!key) {
-        throw new Error('No key found.')
-    }
-
-    // Also to add a proper api key test, Found a good solution for it here:
-    // https://console.cloud.google.com/functions/details/us-east4/answer-question?env=gen2&project=census-questions&tab=logs
 }

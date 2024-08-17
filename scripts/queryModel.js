@@ -1,5 +1,4 @@
 import { promises as fs } from 'fs'
-import { queryAPI } from './queryAPI.js'
 import { csvParse, groups, ascending } from 'd3'
 
 /**
@@ -14,11 +13,9 @@ export async function generateFunctionCall() {
     /**
      * Setting up the censusGroup parameter in the function call
      */
+    
     try {
-        const hostname = 'api.census.gov'
-        const pathnameCommon = 'data/2022/acs/acs1/'
-
-        censusGroups = await queryAPI(hostname, `${pathnameCommon}groups.json`)
+        censusGroups = await fs.readFile('assets/census_2022_groups.json', { encoding: 'utf-8' })
     } catch (err) {
         throw err
     }
@@ -29,7 +26,7 @@ export async function generateFunctionCall() {
      * IDs. See more here: 
      * https://www.census.gov/programs-surveys/acs/data/data-tables/table-ids-explained.html
      */
-    censusGroups = censusGroups.groups
+    censusGroups = JSON.parse(censusGroups).groups
         .filter(f => !f.name === false && !f.description === false)
         .filter(f => f.name.slice(0, 1) === 'B')
         .sort((a, b) => ascending(a.name, b.name))
@@ -41,7 +38,7 @@ export async function generateFunctionCall() {
      */
 
     try {
-        geographyCounties = await fs.readFile('assets/fipsCodes.csv', { encoding: 'utf-8' })
+        geographyCounties = await fs.readFile('assets/fips_codes.csv', { encoding: 'utf-8' })
     } catch (err) {
         throw err
     }
