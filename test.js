@@ -1,9 +1,10 @@
 import inquirer from 'inquirer'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { queryModel, generateFunctionCall } from './scripts/queryModel.js'
+import { initializeModel, queryModel } from './scripts/queryModel.js'
 import { queryAPI, generateSearchParams } from './scripts/queryAPI.js'
 import { arrayToJSON, assignVariableNames, writeData } from './scripts/processData.js'
 import validateInputs from './scripts/validateInputs.js'
+
+const model = await initializeModel()
 
 /**
  * Get user input from the terminal.
@@ -18,17 +19,6 @@ async function getPrompt() {
     return answer.prompt
 }
 
-const functionCall = await generateFunctionCall()
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro",
-    tools: {
-        functionDeclarations: [functionCall]
-    }
-});
-
 /**
  * Test the primary functionality of the API
  * 
@@ -37,14 +27,18 @@ const model = genAI.getGenerativeModel({
  */
 async function getData(prompt) {
     // start by validating the input prompt
-    validateInputs(prompt, process.env.GEMINI_API_KEY)
+    validateInputs(prompt)
 
     // query model for AI prompt
-    const modelResponse = await queryModel(prompt, model)
+    const modelResponse = await queryModel(prompt, model, true)
 
-    if (!modelResponse) return
+    console.log(`btw, that prompt cost you ${(+modelResponse.usageMetadata.totalTokenCount).toLocaleString()} tokens 🤑`)
 
-    const { censusGroup, censusGeography } = modelResponse.args
+    if (!modelResponse.functionCalls()[0]) {
+        throw new Error('Unable to determine function calls from prompt.')
+    }
+
+    const { censusGroup, censusGeography } = modelResponse.functionCalls()[0].args
 
     // query the API with the AI generated variables
     const response = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusGroup, censusGeography, process.env.US_CENSUS_API_KEY))

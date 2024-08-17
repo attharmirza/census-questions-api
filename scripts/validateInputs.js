@@ -4,7 +4,7 @@
  * 
  * @param {string} prompt Natural language prompt for fetching data
  */
-export default function validateInputs(prompt, key) {
+export default function validateInputs(prompt) {
     if (!prompt || prompt.length === 0) {
         throw new Error('No prompt found.')
     }
