@@ -87,8 +87,6 @@ ParsedHtml        : System.__ComObject
 RawContentLength  : 162
 ```
 
----
-
 Alternatively, you can use the `yarn test` command and follow the instructions to fetch data without a local development server. This is useful for testing the accuracy of various prompts. Results are downloaded to a `./downloads/` directory in the project root.
 
 Happy census data hunting! 🌎
