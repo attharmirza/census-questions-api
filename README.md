@@ -42,11 +42,11 @@ Make sure to include a new line at the end of the file, otherwise the tool will 
 
 ---
 
-To update the API on Google Cloud, it's necessary to download and configure the [gcloud CLI](https://cloud.google.com/sdk/gcloud). See documentation [here](https://cloud.google.com/functions/docs/create-deploy-gcloud) on interacting with te [Cloud Functions API](https://cloud.google.com/functions/docs/concepts/overview) using `gcloud`.
+To update the API on Google Cloud, it's necessary to download and configure the [gcloud CLI](https://cloud.google.com/sdk/gcloud). See documentation [here](https://cloud.google.com/functions/docs/create-deploy-gcloud) on interacting with the [Cloud Functions API](https://cloud.google.com/functions/docs/concepts/overview) using `gcloud`.
 
 ## Usage
 
-The API lives on the path `/answer-question` and takes the following query parameters:
+The API lives on the path `/answer-question` and takes the following query parameter:
 
 | Parameter | Type | Example URL String |
 | --------- | ---- | ------------------ |
@@ -86,6 +86,8 @@ Links             : {}
 ParsedHtml        : System.__ComObject
 RawContentLength  : 162
 ```
+
+---
 
 Alternatively, you can use the `yarn test` command and follow the instructions to fetch data without a local development server. This is useful for testing the accuracy of various prompts. Results are downloaded to a `./downloads/` directory in the project root.
 
