@@ -133,3 +133,6 @@ dist
 
 # Downloads from api
 downloads
+
+# Indexing file added by Macs
+.DS_Store
