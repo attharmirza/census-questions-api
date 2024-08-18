@@ -17,7 +17,7 @@ functions.http('answer-question', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*') // Temporary solution for CORS
 
     try {
-        validateInputs(prompt, key)
+        validateInputs(prompt)
     } catch (err) {
         res.status(400).send('Prompt provided is invalid.')
         throw err

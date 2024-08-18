@@ -66,11 +66,11 @@ async function testModel() {
             return
         } else {
             try {
-                console.log(`\nhmm, let me think 🤔\n`)
+                console.log(`\n🤔 Let me think...\n`)
     
                 const response = await getData(input)
 
-                console.log('\nhere\'s your data! 😄\n')
+                console.log('\nHere\'s your data! 😄\n')
                 console.log(response)
                 console.log('\n')
 
