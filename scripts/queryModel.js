@@ -104,10 +104,10 @@ export async function queryModel(prompt, model, isFullResponse = false) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
 
-    if (isFullResponse) return response
-
     if (!response.functionCalls())
         throw new Error('Unable to generate function call from prompt.')
+
+    if (isFullResponse) return response
 
     return response.functionCalls()[0]
 }

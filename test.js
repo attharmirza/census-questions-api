@@ -34,10 +34,6 @@ async function getData(prompt) {
 
     console.log(`btw, that prompt cost you ${(+modelResponse.usageMetadata.totalTokenCount).toLocaleString()} tokens 🤑`)
 
-    if (!modelResponse.functionCalls()[0]) {
-        throw new Error('Unable to determine function calls from prompt.')
-    }
-
     const { censusGroup, censusGeography } = modelResponse.functionCalls()[0].args
 
     // query the API with the AI generated variables

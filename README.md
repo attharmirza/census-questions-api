@@ -10,7 +10,7 @@ The back-end code for the Census Questions application. This code runs on a Goog
 
 Additionally, running `yarn test` launches a special CLI for testing various prompts and the accuracty of the model. Results are downloaded to a `./downloads/` directory in the project root.
 
-## Inputs & Output
+## Input & Output
 
 The API lives on the path `/answer-question` and takes the following query parameter(s):
 
