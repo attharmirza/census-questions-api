@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import { csvParse, groups, ascending } from 'd3'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { ChatSession, GoogleGenerativeAI } from '@google/generative-ai'
 
 /**
  * Pull possible variables from the Census API and then generate a function call
@@ -8,7 +8,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
  * 
  * @returns {object} Function call following the Gemini/Open API [spec](https://ai.google.dev/gemini-api/docs/function-calling)
  */
-export async function generateFunctionCall() {
+async function generateFunctionDeclaration() {
     let censusGroups, geographyCounties
 
     // Setting up the censusGroup parameter in the function call
@@ -18,7 +18,7 @@ export async function generateFunctionCall() {
     } catch (err) {
         throw err
     }
-    
+
     // I can filter some of the groups down to make the query more efficient,
     // and to make it use less tokens, based on a better understanding of Table
     // IDs. See more here: https://www.census.gov/programs-surveys/acs/data/data-tables/table-ids-explained.html
@@ -65,49 +65,81 @@ export async function generateFunctionCall() {
                 censusGeography: {
                     type: 'STRING',
                     description: geographyCountiesDescription
+                },
+                analysisNeeded: {
+                    type: 'BOOLEAN',
+                    description: 'Does the prompt require calculation of an average, maximum, minimum, ratio, percentage or change? Or does it require selecting the highest, lowest or most relevant value from a group or list? If yes, return "true". If no, return "false".'
                 }
             },
-            required: ["censusGroup", "censusGeography"]
+            required: ["censusGroup", "censusGeography", "analysisNeeded"]
         }
     }
 }
 
+const functionDeclaration = await generateFunctionDeclaration()
+
 /**
  * Initialize a Gemini AI model with function calls.
  * 
- * @returns {GenerativeModel} 
+ * @returns {ChatSession} 
  */
 export async function initializeModel() {
     const key = process.env.GEMINI_API_KEY // Using my personal Gemini API key for now, temporary solution
 
-    const functionCall = await generateFunctionCall()
-
     const genAI = new GoogleGenerativeAI(key);
 
-    return genAI.getGenerativeModel({
+    const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
         tools: {
-            functionDeclarations: [functionCall]
+            functionDeclarations: [functionDeclaration]
         }
     });
+
+    return model.startChat()
 }
 
 /**
- * Get API query parameters from a the generative AI model.
+ * Get API query parameters from the AI model.
  * 
+ * @param {ChatSession} chat Gemini model chat session
  * @param {string} prompt User generated text to query an API
- * @param {GenerativeModel} model Pre-defined Gemini model instance
- * @param {boolean} [isFullResponse = false] Get full respones instead of just function call
- * @returns {string}
+ * @param {boolean} [isFullResponse = false] Get full responses instead of just function call
+ * @returns {import('@google/generative-ai').EnhancedGenerateContentResponse | Object}
  */
-export async function queryModel(prompt, model, isFullResponse = false) {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
+export async function queryModelParameters(chat, prompt, isFullResponse) {
+    const result = await chat.sendMessage(prompt)
 
-    if (!response.functionCalls())
-        throw new Error('Unable to generate function call from prompt.')
+    const response = result.response
+
+    if (response.functionCalls() === undefined) throw new Error('Unable to execute function call from prompt.') // cannot catch this error!!!
 
     if (isFullResponse) return response
 
-    return response.functionCalls()[0]
+    return response.functionCalls()[0].args
+}
+
+/**
+ * Get paragraph of analysis from the AI model, used after queryModelParameters() function.
+ * 
+ * @param {ChatSession} chat Gemini model chat session
+ * @param {Array} data Data pulled from API
+ * @param {boolean} [isFullResponse = false] Get full responses instead of just text
+ * @returns {import('@google/generative-ai').EnhancedGenerateContentResponse | string}
+ */
+export async function queryModelAnalysis(chat, data, isFullResponse) {
+    const result = await chat.sendMessage([{
+        functionResponse: {
+            name: functionDeclaration.name,
+            response: { content: data }
+        }
+    }])
+
+    const response = result.response
+
+    if (!response.text())
+        throw new Error('Unable to generate text from data.')
+
+    if (isFullResponse) return response
+
+    return response.text()
 }

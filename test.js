@@ -1,10 +1,8 @@
 import inquirer from 'inquirer'
-import { initializeModel, queryModel } from './scripts/queryModel.js'
+import { initializeModel, queryModelParameters, queryModelAnalysis } from './scripts/queryModel.js'
 import { queryAPI, generateSearchParams } from './scripts/queryAPI.js'
 import { arrayToJSON, assignVariableNames, writeData } from './scripts/processData.js'
 import validateInputs from './scripts/validateInputs.js'
-
-const model = await initializeModel()
 
 /**
  * Get user input from the terminal.
@@ -30,18 +28,32 @@ async function getData(prompt) {
     validateInputs(prompt)
 
     // query model for AI prompt
-    const modelResponse = await queryModel(prompt, model, true)
+const model = await initializeModel()
+
+    const modelResponse = await queryModelParameters(model, prompt, true)
 
     console.log(`btw, that prompt cost you ${(+modelResponse.usageMetadata.totalTokenCount).toLocaleString()} tokens 🤑`)
 
-    const { censusGroup, censusGeography } = modelResponse.functionCalls()[0].args
+    const args = modelResponse.functionCalls()[0].args
+
+    const { censusGroup, censusGeography } = args
 
     // query the API with the AI generated variables
-    const response = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusGroup, censusGeography, process.env.US_CENSUS_API_KEY))
+    const censusData = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusGroup, censusGeography, process.env.US_CENSUS_API_KEY))
 
-    const responseFormatted = await assignVariableNames(arrayToJSON(response))
+    const censusDataFormatted = await assignVariableNames(arrayToJSON(censusData))
 
-    return responseFormatted
+    const { analysisNeeded } = args
+
+    let censusDataAnalysis
+
+    if (analysisNeeded === 'true') {
+        censusDataAnalysis = await queryModelAnalysis(model, censusDataFormatted, true)
+
+        console.log(`oh wait, 😬 and an addiional ${(+censusDataAnalysis.usageMetadata.totalTokenCount).toLocaleString()} tokens for the analysis 😱`)
+    }
+
+    return { censusDataFormatted, censusDataAnalysis: censusDataAnalysis?.text() }
 }
 
 /**
