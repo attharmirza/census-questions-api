@@ -27,9 +27,12 @@ async function getData(prompt) {
     // start by validating the input prompt
     validateInputs(prompt)
 
-    // query model for AI prompt
-const model = await initializeModel()
+    // initialize model and set start timestamp
+    const model = await initializeModel()
 
+    const requestTimestamp = Date.now()
+
+    // query model for AI prompt
     const modelResponse = await queryModelParameters(model, prompt, true)
 
     console.log(`btw, that prompt cost you ${(+modelResponse.usageMetadata.totalTokenCount).toLocaleString()} tokens 🤑`)
@@ -41,7 +44,7 @@ const model = await initializeModel()
     // query the API with the AI generated variables
     const censusData = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusGroup, censusGeography, process.env.US_CENSUS_API_KEY))
 
-    const censusDataFormatted = await assignVariableNames(arrayToJSON(censusData))
+    const censusDataFormatted = await assignVariableNames(arrayToJSON(censusData.json))
 
     const { analysisNeeded } = args
 
@@ -53,7 +56,15 @@ const model = await initializeModel()
         console.log(`oh wait, 😬 and an addiional ${(+censusDataAnalysis.usageMetadata.totalTokenCount).toLocaleString()} tokens for the analysis 😱`)
     }
 
-    return { censusDataFormatted, censusDataAnalysis: censusDataAnalysis?.text() }
+    return { 
+        requestTimestamp: requestTimestamp,
+        requestDuration: Date.now() - requestTimestamp,
+        requestTokens: (+modelResponse.usageMetadata.totalTokenCount) + (censusDataAnalysis ? +censusDataAnalysis.usageMetadata.totalTokenCount : 0),
+        data: censusDataFormatted, 
+        dataUrl: censusData.url.href,
+        dataSource: "The American Community Survey (ACS) is an ongoing survey that provides data every year -- giving communities the current information they need to plan investments and services. The ACS covers a broad range of topics about social, economic, demographic, and housing characteristics of the U.S. population. Much of the ACS data provided on the Census Bureau's Web site are available separately by age group, race, Hispanic origin, and sex. Summary files, Subject tables, Data profiles, and Comparison profiles are available for the nation, all 50 states, the District of Columbia, Puerto Rico, every congressional district, every metropolitan area, and all counties and places with populations of 65,000 or more. Detailed Tables contain the most detailed cross-tabulations published for areas 65k and more. The data are population counts. There are over 31,000 variables in this dataset.", // Hardcoded for now, but should be fetched from here: https://api.census.gov/data/2022/acs/acs1/
+        analysis: censusDataAnalysis?.text() 
+    }
 }
 
 /**
@@ -75,7 +86,7 @@ async function testModel() {
         } else {
             try {
                 console.log(`\n🤔 Let me think...\n`)
-    
+
                 const response = await getData(input)
 
                 console.log('\nHere\'s your data! 😄\n')
@@ -83,7 +94,7 @@ async function testModel() {
                 console.log('\n')
 
                 await writeData(response)
-                
+
                 console.log('\n')
             } catch (error) {
                 console.error(error)

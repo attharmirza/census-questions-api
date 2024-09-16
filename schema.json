@@ -3,6 +3,10 @@
     "description": "A table from census data comparing geography with a population based statistic.",
     "type": "object",
     "properties": {
+        "requestTimestamp": {
+            "type": "number",
+            "description": "Epoch/unix timestamp in milliseconds at the start of the request."
+        },
         "requestDuration": {
             "type": "number",
             "description": "Time in milliseconds it took to process request and return the response."
@@ -71,7 +75,8 @@
                     "geoID",
                     "groupID",
                     "groupLabel",
-                    "unit"
+                    "unit",
+                    "categories"
                 ]
             }
         },
@@ -81,7 +86,7 @@
         },
         "dataSource": {
             "type": "string",
-            "description": "Citation for the data returned from the census organization."
+            "description": "Citation for the data provided by the census organization."
         },
         "analysis": {
             "type": "string",

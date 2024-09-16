@@ -29,8 +29,9 @@ export function arrayToJSON(data) {
  * @returns {JSON} changes values into objects with value, label and concept keys
  */
 export async function assignVariableNames(dataJSON) {
-    let censusVariables = await queryAPI('api.census.gov', 'data/2022/acs/acs1/variables.json')
-    censusVariables = new Map(Object.entries(censusVariables.variables))
+    let censusVariables = await fs.readFile('assets/census_2022_variables.json', { encoding: 'utf-8' })
+
+    censusVariables = new Map(Object.entries(JSON.parse(censusVariables).variables))
 
     return dataJSON.map(d => {
         const { NAME, GEO_ID } = d
@@ -53,11 +54,18 @@ export async function assignVariableNames(dataJSON) {
 
                 DESCRIPTION = concept
 
-                return { ID, LABEL: label, VALUE }
+                return { variableID: ID, variableLabel: label, value: VALUE }
             })
             .filter(f => !f === false)
 
-        return { NAME, GEO_ID, DESCRIPTION, CATEGORIES }
+        return {
+            name: NAME,
+            geoID: GEO_ID,
+            groupID: "",
+            groupLabel: DESCRIPTION,
+            unit: "",
+            categories: CATEGORIES
+        }
     })
 }
 
