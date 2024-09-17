@@ -26,20 +26,27 @@ export function arrayToJSON(data) {
  * Join variable descriptions from the census API to the data.
  * 
  * @param {JSON} dataJSON output from  arrayToJSON function
+ * @param {string} groupID census group ID for joining metadata
  * @returns {JSON} changes values into objects with value, label and concept keys
  */
-export async function assignVariableNames(dataJSON) {
+export async function assignVariableNames(dataJSON, groupID) {
     let censusVariables = await fs.readFile('assets/census_2022_variables.json', { encoding: 'utf-8' })
 
     censusVariables = new Map(Object.entries(JSON.parse(censusVariables).variables))
+
+    let censusGroups = await fs.readFile('assets/census_2022_groups.json', { encoding: 'utf-8' })
+
+    censusGroups = new Map(JSON.parse(censusGroups).groups.map(d => [d.name, d]))
+
+    if (!censusGroups.has(groupID)) throw new Error('Invalid census data group ID.')
+
+    const censusGroupSelected = censusGroups.get(groupID)
 
     return dataJSON.map(d => {
         const { NAME, GEO_ID } = d
 
         delete d['NAME']
         delete d['GEO_ID']
-
-        let DESCRIPTION
 
         const CATEGORIES = Object
             .entries(d)
@@ -52,8 +59,6 @@ export async function assignVariableNames(dataJSON) {
                 const VALUE = e[1]
                 const ID = e[0]
 
-                DESCRIPTION = concept
-
                 return { variableID: ID, variableLabel: label, value: VALUE }
             })
             .filter(f => !f === false)
@@ -61,9 +66,9 @@ export async function assignVariableNames(dataJSON) {
         return {
             name: NAME,
             geoID: GEO_ID,
-            groupID: "",
-            groupLabel: DESCRIPTION,
-            unit: "",
+            groupID: censusGroupSelected.name,
+            groupLabel: censusGroupSelected.description,
+            unit: censusGroupSelected["universe "],
             categories: CATEGORIES
         }
     })
