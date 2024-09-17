@@ -1,6 +1,6 @@
 import * as functions from '@google-cloud/functions-framework'
-import { initializeModel, queryModel } from './scripts/queryModel.js'
-import { queryAPI, generateSearchParams } from './scripts/queryAPI.js'
+import { initializeModel, queryModelParameters, queryModelAnalysis } from './scripts/queryModel.js'
+import { queryAPI, generateSearchParams, removeKeyParameter } from './scripts/queryAPI.js'
 import { arrayToJSON, assignVariableNames } from './scripts/processData.js'
 import validateInputs from './scripts/validateInputs.js'
 
@@ -23,30 +23,67 @@ functions.http('answer-question', async (req, res) => {
         throw err
     }
 
-    let modelResponse, apiResponse, apiResponseFormatted
+    const chat = model.startChat()
+
+    const responseObject = {
+        requestTimestamp: Date.now(),
+        requestDuration: 0,
+        requestTokens: 0,
+        data: undefined, 
+        dataUrl: undefined,
+        dataSource: "The American Community Survey (ACS) is an ongoing survey that provides data every year -- giving communities the current information they need to plan investments and services. The ACS covers a broad range of topics about social, economic, demographic, and housing characteristics of the U.S. population. Much of the ACS data provided on the Census Bureau's Web site are available separately by age group, race, Hispanic origin, and sex. Summary files, Subject tables, Data profiles, and Comparison profiles are available for the nation, all 50 states, the District of Columbia, Puerto Rico, every congressional district, every metropolitan area, and all counties and places with populations of 65,000 or more. Detailed Tables contain the most detailed cross-tabulations published for areas 65k and more. The data are population counts. There are over 31,000 variables in this dataset.", // Hardcoded for now, but should be fetched from here: https://api.census.gov/data/2022/acs/acs1/
+        analysis: undefined
+    }
+
+    let modelParametersArgs
 
     try {
-        modelResponse = await queryModel(prompt, model)
+        const modelParameters = await queryModelParameters(chat, prompt)
+
+        responseObject.requestTokens = responseObject.requestTokens + (+modelParameters.usageMetadata.totalTokenCount)
+
+        modelParametersArgs = modelParameters.functionCalls()[0].args
     } catch (err) {
         res.status(502).send('Unable to query Gemini API.')
         throw err
     }
 
-    const { censusGroup, censusGeography } = modelResponse.args
+    const { censusGroup, censusGeography, analysisNeeded } = modelParametersArgs
+
+    let apiResponse, apiResponseFormatted
 
     try {
         apiResponse = await queryAPI('api.census.gov', 'data/2022/acs/acs1', generateSearchParams(censusGroup, censusGeography, process.env.US_CENSUS_API_KEY))
+
+        responseObject.dataUrl = removeKeyParameter(apiResponse.url).href
     } catch (err) {
         res.status(502).send('Unable to query Census API.')
         throw err
     }
 
     try {
-        apiResponseFormatted = await assignVariableNames(arrayToJSON(apiResponse))
+        apiResponseFormatted = await assignVariableNames(arrayToJSON(apiResponse.json), censusGroup)
+
+        responseObject.data = apiResponseFormatted
     } catch (err) {
         res.status(500).send('Error processing data.')
         throw err
     }
 
-    res.status(200).send(apiResponseFormatted)
+    if (analysisNeeded === 'true') {
+        try {
+            const modelAnalysis = await queryModelAnalysis(chat, apiResponseFormatted)
+
+            responseObject.requestTokens = responseObject.requestTokens + (+modelAnalysis.usageMetadata.totalTokenCount)
+
+            responseObject.analysis = modelAnalysis.text()
+        } catch (err) {
+            res.status(502).send('Unable to query Gemini API.')
+            throw err
+        }
+    }
+
+    responseObject.requestDuration = Date.now() - responseObject.requestTimestamp
+
+    res.status(200).send(responseObject)
 });

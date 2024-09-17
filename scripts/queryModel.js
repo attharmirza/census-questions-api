@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import { csvParse, groups, ascending } from 'd3'
-import { ChatSession, GoogleGenerativeAI } from '@google/generative-ai'
+import { ChatSession, GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai'
 
 /**
  * Pull possible variables from the Census API and then generate a function call
@@ -81,7 +81,7 @@ const functionDeclaration = await generateFunctionDeclaration()
 /**
  * Initialize a Gemini AI model with function calls.
  * 
- * @returns {ChatSession} 
+ * @returns {GenerativeModel} 
  */
 export async function initializeModel() {
     const key = process.env.GEMINI_API_KEY // Using my personal Gemini API key for now, temporary solution
@@ -95,7 +95,7 @@ export async function initializeModel() {
         }
     });
 
-    return model.startChat()
+    return model
 }
 
 /**
@@ -103,19 +103,16 @@ export async function initializeModel() {
  * 
  * @param {ChatSession} chat Gemini model chat session
  * @param {string} prompt User generated text to query an API
- * @param {boolean} [isFullResponse = false] Get full responses instead of just function call
- * @returns {import('@google/generative-ai').EnhancedGenerateContentResponse | Object}
+ * @returns {import('@google/generative-ai').EnhancedGenerateContentResponse}
  */
-export async function queryModelParameters(chat, prompt, isFullResponse) {
+export async function queryModelParameters(chat, prompt) {
     const result = await chat.sendMessage(prompt)
 
     const response = result.response
 
     if (response.functionCalls() === undefined) throw new Error('Unable to execute function call from prompt.') // cannot catch this error!!!
 
-    if (isFullResponse) return response
-
-    return response.functionCalls()[0].args
+    return response
 }
 
 /**
@@ -123,10 +120,9 @@ export async function queryModelParameters(chat, prompt, isFullResponse) {
  * 
  * @param {ChatSession} chat Gemini model chat session
  * @param {Array} data Data pulled from API
- * @param {boolean} [isFullResponse = false] Get full responses instead of just text
- * @returns {import('@google/generative-ai').EnhancedGenerateContentResponse | string}
+ * @returns {import('@google/generative-ai').EnhancedGenerateContentResponse}
  */
-export async function queryModelAnalysis(chat, data, isFullResponse) {
+export async function queryModelAnalysis(chat, data) {
     const result = await chat.sendMessage([{
         functionResponse: {
             name: functionDeclaration.name,
@@ -139,7 +135,5 @@ export async function queryModelAnalysis(chat, data, isFullResponse) {
     if (!response.text())
         throw new Error('Unable to generate text from data.')
 
-    if (isFullResponse) return response
-
-    return response.text()
+    return response
 }

@@ -4,6 +4,9 @@ import { queryAPI, generateSearchParams, removeKeyParameter } from './scripts/qu
 import { arrayToJSON, assignVariableNames, writeData } from './scripts/processData.js'
 import validateInputs from './scripts/validateInputs.js'
 
+// Initializing model only once per session
+const model = await initializeModel()
+
 /**
  * Get user input from the terminal.
  * 
@@ -21,19 +24,19 @@ async function getPrompt() {
  * Test the primary functionality of the API
  * 
  * @param {string} prompt Question to send to Gemini
- * @returns {JSON} 
+ * @returns {Object} response object matching schema
  */
 async function getData(prompt) {
     // start by validating the input prompt
     validateInputs(prompt)
 
-    // initialize model and set start timestamp
-    const model = await initializeModel()
+    // initialize model chat and set start timestamp
+    const chat = model.startChat()
 
     const requestTimestamp = Date.now()
 
     // query model for AI prompt
-    const modelResponse = await queryModelParameters(model, prompt, true)
+    const modelResponse = await queryModelParameters(chat, prompt)
 
     console.log(`btw, that prompt cost you ${(+modelResponse.usageMetadata.totalTokenCount).toLocaleString()} tokens 🤑`)
 
@@ -52,7 +55,7 @@ async function getData(prompt) {
     let censusDataAnalysis
 
     if (analysisNeeded === 'true') {
-        censusDataAnalysis = await queryModelAnalysis(model, censusDataFormatted, true)
+        censusDataAnalysis = await queryModelAnalysis(chat, censusDataFormatted)
 
         console.log(`oh wait, 😬 and an addiional ${(+censusDataAnalysis.usageMetadata.totalTokenCount).toLocaleString()} tokens for the analysis 😱`)
     }
