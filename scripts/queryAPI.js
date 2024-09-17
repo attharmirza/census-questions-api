@@ -66,3 +66,15 @@ export async function queryAPI(hostname, pathname, searchParams) {
         throw err
     }
 }
+
+/**
+ * Clean the key query parameter from a URL object.
+ *  
+ * @param {URL} url URL object with key paramater
+ * @returns {URL} Cleaned URL
+ */
+export function removeKeyParameter(url) {
+    url.searchParams.delete('key')
+
+    return url
+}

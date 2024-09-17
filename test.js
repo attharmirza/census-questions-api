@@ -1,6 +1,6 @@
 import inquirer from 'inquirer'
 import { initializeModel, queryModelParameters, queryModelAnalysis } from './scripts/queryModel.js'
-import { queryAPI, generateSearchParams } from './scripts/queryAPI.js'
+import { queryAPI, generateSearchParams, removeKeyParameter } from './scripts/queryAPI.js'
 import { arrayToJSON, assignVariableNames, writeData } from './scripts/processData.js'
 import validateInputs from './scripts/validateInputs.js'
 
@@ -46,14 +46,6 @@ async function getData(prompt) {
 
     const censusDataFormatted = await assignVariableNames(arrayToJSON(censusData.json), censusGroup)
 
-    const censusDataURLCleaned = () => {
-        const url = censusData.url
-        
-        url.searchParams.delete('key')
-
-        return url
-    }
-
     // if necessary, analyze the returned data using AI
     const { analysisNeeded } = args
 
@@ -70,7 +62,7 @@ async function getData(prompt) {
         requestDuration: Date.now() - requestTimestamp,
         requestTokens: (+modelResponse.usageMetadata.totalTokenCount) + (censusDataAnalysis ? +censusDataAnalysis.usageMetadata.totalTokenCount : 0),
         data: censusDataFormatted, 
-        dataUrl: censusDataURLCleaned().href,
+        dataUrl: removeKeyParameter(censusData.url).href,
         dataSource: "The American Community Survey (ACS) is an ongoing survey that provides data every year -- giving communities the current information they need to plan investments and services. The ACS covers a broad range of topics about social, economic, demographic, and housing characteristics of the U.S. population. Much of the ACS data provided on the Census Bureau's Web site are available separately by age group, race, Hispanic origin, and sex. Summary files, Subject tables, Data profiles, and Comparison profiles are available for the nation, all 50 states, the District of Columbia, Puerto Rico, every congressional district, every metropolitan area, and all counties and places with populations of 65,000 or more. Detailed Tables contain the most detailed cross-tabulations published for areas 65k and more. The data are population counts. There are over 31,000 variables in this dataset.", // Hardcoded for now, but should be fetched from here: https://api.census.gov/data/2022/acs/acs1/
         analysis: censusDataAnalysis?.text() 
     }

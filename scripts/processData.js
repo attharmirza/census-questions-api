@@ -55,7 +55,7 @@ export async function assignVariableNames(dataJSON, groupID) {
 
                 if (!variableInfo) return
 
-                const { label, concept } = variableInfo
+                const { label } = variableInfo
                 const VALUE = e[1]
                 const ID = e[0]
 
