@@ -10,6 +10,16 @@ The back-end code for the Census Questions application. This code runs on a Goog
 
 Additionally, running `yarn test` launches a special CLI for testing various prompts and the accuracty of the model. Results are downloaded to a `./downloads/` directory in the project root.
 
+## Input & Output
+
+The API lives on the path `/answer-question` and takes the following query parameter(s):
+
+| Parameter | Type | Example URL String |
+| --------- | ---- | ------------------ |
+| `prompt` | `String` | `/answer-question?prompt=What%27s+the+population+of+the+United+States%3F` |
+
+The output is a JSON file as defined in `schema.json`.
+
 ## Requirements 
 
 - [Node.js](https://nodejs.org/en/download/package-manager) (v20.16.0)
@@ -46,13 +56,7 @@ To update the API on Google Cloud, it's necessary to download and configure the 
 
 ## Usage
 
-The API lives on the path `/answer-question` and takes the following query parameter:
-
-| Parameter | Type | Example URL String |
-| --------- | ---- | ------------------ |
-| `prompt` | `String` | `/answer-question?prompt=What%27s+the+population+of+the+United+States%3F` |
-
-To use that query paramater to get data, start the local server and run the following in another terminal window.
+Start a local server and run the following in another terminal window.
 
 ```bash
 curl http://localhost:8080/answer-question?prompt=What%27s+the+population+of+the+United+States%3F
